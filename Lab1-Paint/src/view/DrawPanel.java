@@ -1,3 +1,8 @@
+package view;
+
+import constants.Constants;
+import utils.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -6,26 +11,42 @@ import java.util.function.IntFunction;
 
 public class DrawPanel extends JPanel implements MouseListener {
 
-    Mode mode = Mode.DrawLine;
-    boolean isClean = false;
-    int[] pressCoords = new int[] {0, 0};
+    private boolean isClean = false;
+    private final int[] pressCoords = new int[] {0, 0};
 
-    DrawPanel() {
+    private Mode mode = Mode.DrawLine;
+    private int lineThickness = Constants.DefaultThickness;
+    private int shapeRadius = Constants.DefaultRadius;
+    private Color fillColor = Color.decode(Constants.MainColors[0]);
+
+    public DrawPanel() {
         addMouseListener(this);
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
     }
 
     public void setMode(Mode mode) {
         this.mode = mode;
     }
 
+    public void setLineThickness(int lineThickness) {
+        this.lineThickness = lineThickness;
+    }
+
+    public void setShapeRadius(int shapeRadius) {
+        this.shapeRadius = shapeRadius;
+    }
+
+    public void setFillColor(Color fillColor) {
+        this.fillColor = fillColor;
+    }
+
     public void clean() {
         isClean = !isClean;
         repaint();
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
     }
 
     @Override
@@ -40,9 +61,13 @@ public class DrawPanel extends JPanel implements MouseListener {
     public void mouseReleased(MouseEvent e) {
         if (mode == Mode.DrawLine) {
             Graphics2D g = (Graphics2D) getGraphics();
-            g.setStroke(new BasicStroke(5));
-            // g.drawLine(pressCoords[0], pressCoords[1], e.getX(), e.getY());
-            this.drawBresenhamLine(pressCoords[0], pressCoords[1], e.getX(), e.getY(), g);
+            g.setColor(fillColor);
+            if (lineThickness > 1) {
+                g.setStroke(new BasicStroke(lineThickness));
+                g.drawLine(pressCoords[0], pressCoords[1], e.getX(), e.getY());
+            } else {
+                this.drawBresenhamLine(pressCoords[0], pressCoords[1], e.getX(), e.getY(), g);
+            }
             pressCoords[0] = -1;
             pressCoords[1] = -1;
         }
@@ -50,16 +75,17 @@ public class DrawPanel extends JPanel implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (mode != Mode.DrawShape) {
+        if (mode != Mode.DrawShape && mode != Mode.DrawStar) {
             return;
         }
 
         Graphics g = getGraphics();
+        g.setColor(fillColor);
         int centerX = e.getX();
         int centerY = e.getY();
 
         int N = 5;
-        double R = 100.0;
+        double R = shapeRadius;
         double betta = -Math.PI / (2.0 * N);
         double alpha = Math.PI / N;
 
@@ -104,12 +130,6 @@ public class DrawPanel extends JPanel implements MouseListener {
         dx = Math.abs(dx);
         dy = Math.abs(dy);
 
-        /*
-         * Если dx > dy, то значит отрезок "вытянут" вдоль оси икс, т.е. он скорее длинный, чем высокий.
-         * Значит в цикле нужно будет идти по икс (строчка el = dx;), значит "протягивать" прямую по иксу
-         * надо в соответствии с тем, слева направо и справа налево она идёт (pdx = incx;), при этом
-         * по y сдвиг такой отсутствует.
-         */
         if (dx > dy) {
             pdx = xInc;
             pdy = 0;
@@ -131,11 +151,11 @@ public class DrawPanel extends JPanel implements MouseListener {
             err -= es;
             if (err < 0) {
                 err += el;
-                x += xInc; // сдвинуть прямую (сместить вверх или вниз, если цикл проходит по иксам)
-                y += yInc; // или сместить влево-вправо, если цикл проходит по y
+                x += xInc;
+                y += yInc;
             } else {
-                x += pdx; // продолжить тянуть прямую дальше, т.е. сдвинуть влево или вправо, если
-                y += pdy; // цикл идёт по иксу; сдвинуть вверх или вниз, если по y
+                x += pdx;
+                y += pdy;
             }
             g.fillRect(x, y, 1, 1);
         }
