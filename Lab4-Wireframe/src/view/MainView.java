@@ -1,7 +1,6 @@
-package kobtsev19203.view;
+package view;
 
-import kobtsev19203.Window;
-import kobtsev19203.state.State;
+import state.State;
 
 import javax.swing.*;
 import java.awt.*;

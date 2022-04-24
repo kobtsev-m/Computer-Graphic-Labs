@@ -1,9 +1,7 @@
-package kobtsev19203;
-
-import kobtsev19203.state.State;
-import kobtsev19203.view.MainView;
-import kobtsev19203.view.Result3dView;
-import kobtsev19203.utils.WindowBase;
+import state.State;
+import view.MainView;
+import view.Result3dView;
+import utils.WindowBase;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,4 +1,4 @@
-package kobtsev19203.utils;
+package utils;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;

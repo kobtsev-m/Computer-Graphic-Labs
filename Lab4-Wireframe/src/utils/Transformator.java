@@ -1,4 +1,4 @@
-package kobtsev19203.utils;
+package utils;
 
 public class Transformator {
     private final int x0;

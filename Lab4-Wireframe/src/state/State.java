@@ -1,6 +1,6 @@
-package kobtsev19203.state;
+package state;
 
-import kobtsev19203.math.Vector4;
+import math.Vector4;
 
 import java.io.Serializable;
 import java.util.ArrayList;

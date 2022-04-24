@@ -1,4 +1,4 @@
-package kobtsev19203.utils;
+package utils;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,4 +1,4 @@
-package kobtsev19203.math;
+package math;
 
 import java.io.Serializable;
 

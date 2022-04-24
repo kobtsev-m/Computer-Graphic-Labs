@@ -1,8 +1,8 @@
-package kobtsev19203.view;
+package view;
 
-import kobtsev19203.state.State;
-import kobtsev19203.math.Matrix;
-import kobtsev19203.math.Vector4;
+import state.State;
+import math.Matrix;
+import math.Vector4;
 
 import javax.swing.*;
 import java.awt.*;

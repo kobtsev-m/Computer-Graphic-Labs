@@ -1,7 +1,7 @@
-package kobtsev19203.view;
+package view;
 
-import kobtsev19203.state.State;
-import kobtsev19203.utils.GridBagLayout;
+import state.State;
+import utils.GridBagLayout;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
