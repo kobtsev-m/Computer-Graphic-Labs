@@ -107,7 +107,10 @@ public class WindowBase extends JFrame {
 					(subElement instanceof JMenu && ((JMenu)subElement).getText().equals(pathElement)) ||
 					(subElement instanceof JMenuItem && ((JMenuItem)subElement).getText().equals(pathElement))
 				) {
-					if (subElement.getSubElements().length==1 && subElement.getSubElements()[0] instanceof JPopupMenu) {
+					if (
+						subElement.getSubElements().length == 1 &&
+						subElement.getSubElements()[0] instanceof JPopupMenu
+					) {
 						newElement = subElement.getSubElements()[0];
 					} else {
 						newElement = subElement;

@@ -160,34 +160,71 @@ public class SplineView extends JPanel {
         gi.drawLine(transformator.xBToA(0), 0, transformator.xBToA(0), getHeight());
         gi.setColor(Color.BLACK);
         int riskSize = 5;
-        gi.drawLine(transformator.xBToA(1), getHeight() / 2 - riskSize, transformator.xBToA(1), getHeight() / 2 + riskSize);
-        gi.drawLine(getWidth() / 2 - riskSize, transformator.yBToA(1), getWidth() / 2 + riskSize, transformator.yBToA(1));
+        gi.drawLine(
+            transformator.xBToA(1),
+            getHeight() / 2 - riskSize,
+            transformator.xBToA(1),
+            getHeight() / 2 + riskSize
+        );
+        gi.drawLine(
+            getWidth() / 2 - riskSize,
+            transformator.yBToA(1),
+            getWidth() / 2 + riskSize,
+            transformator.yBToA(1)
+        );
         calcPointsToDraw();
         gi.setColor(Color.BLACK);
         for (int i = 0; i < state.getSplinePoints().size() - 1; i++) {
             Vector4 point1 = state.getSplinePoints().get(i);
             Vector4 point2 = state.getSplinePoints().get(i + 1);
-            gi.drawLine(transformator.xBToA(point1.getX()), transformator.yBToA(point1.getY()), transformator.xBToA(point2.getX()), transformator.yBToA(point2.getY()));
+            gi.drawLine(
+                transformator.xBToA(point1.getX()),
+                transformator.yBToA(point1.getY()),
+                transformator.xBToA(point2.getX()),
+                transformator.yBToA(point2.getY())
+            );
         }
         gi.setColor(Color.LIGHT_GRAY);
         for (int i = 0; i < state.getPoints().size() - 1; i++) {
             Vector4 point1 = state.getPoints().get(i);
             Vector4 point2 = state.getPoints().get(i + 1);
-            gi.drawLine(transformator.xBToA(point1.getX()), transformator.yBToA(point1.getY()), transformator.xBToA(point2.getX()), transformator.yBToA(point2.getY()));
+            gi.drawLine(transformator.xBToA(
+                point1.getX()),
+                transformator.yBToA(point1.getY()),
+                transformator.xBToA(point2.getX()),
+                transformator.yBToA(point2.getY())
+            );
         }
         gi.setColor(Color.BLUE);
         for (int i = 0; i < state.getPoints().size(); i++) {
             Vector4 point = state.getPoints().get(i);
-            drawPoint(image, transformator.xBToA(point.getX()), transformator.yBToA(point.getY()), point.getPointSize(), Color.RED);
+            drawPoint(
+                image,
+                transformator.xBToA(point.getX()),
+                transformator.yBToA(point.getY()),
+                point.getPointSize(),
+                Color.RED
+            );
         }
 
         for (Vector4 point : subPoints) {
-            drawPoint(image, transformator.xBToA(point.getX()), transformator.yBToA(point.getY()), point.getPointSize(), Color.RED);
+            drawPoint(
+                image,
+                transformator.xBToA(point.getX()),
+                transformator.yBToA(point.getY()),
+                point.getPointSize(),
+                Color.RED
+            );
         }
         if (selectedPoint != -1 && selectedPoint < state.getPoints().size()) {
             Vector4 point = state.getPoints().get(this.selectedPoint);
-            drawPoint(image, transformator.xBToA(point.getX()), transformator.yBToA(point.getY()), point.getPointSize(), Color.BLUE);
-
+            drawPoint(
+                image,
+                transformator.xBToA(point.getX()),
+                transformator.yBToA(point.getY()),
+                point.getPointSize(),
+                Color.BLUE
+            );
         }
         gi.setColor(Color.GREEN);
         g.drawImage(image, 0, 0, null);
@@ -209,7 +246,11 @@ public class SplineView extends JPanel {
             Vector4 point1 = state.getPoints().get(i);
             Vector4 point2 = state.getPoints().get(i + 1);
             int subPointSize = pointSize / 2;
-            Vector4 subPoint = new Vector4((point2.getX() - point1.getX()) / 2 + point1.getX(), (point2.getY() - point1.getY()) / 2 + point1.getY(), subPointSize);
+            Vector4 subPoint = new Vector4(
+                (point2.getX() - point1.getX()) / 2 + point1.getX(),
+                (point2.getY() - point1.getY()) / 2 + point1.getY(),
+                subPointSize
+            );
             subPoints.add(subPoint);
         }
     }

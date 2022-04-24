@@ -6,13 +6,13 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainView extends JPanel {
-    Window mw;
-    SplineView view;
-    SplineMenu menu;
+    Window window;
+    SplineView splineView;
+    SplineMenu splineMenu;
     Result3dView result3dView;
 
-    public MainView(Window mw, Result3dView result3dView, State state) {
-        this.mw = mw;
+    public MainView(Window window, Result3dView result3dView, State state) {
+        this.window = window;
         this.result3dView = result3dView;
 
         setLayout(new GridBagLayout());
@@ -30,30 +30,26 @@ public class MainView extends JPanel {
         constraints2.weighty = 0.1f;
         constraints2.gridy = 1;
 
-        view = new SplineView(state);
-        menu = new SplineMenu(result3dView, view, state);
-        view.setMenu(menu);
+        splineView = new SplineView(state);
+        splineMenu = new SplineMenu(result3dView, splineView, state);
+        splineView.setMenu(splineMenu);
 
-        add(view, constraints1);
-        add(menu, constraints2);
+        add(splineView, constraints1);
+        add(splineMenu, constraints2);
         setVisible(true);
     }
 
-    public JPanel getParametersPanel() {
-        return this;
-    }
-
     public State getState() {
-        return view.getState();
+        return splineView.getState();
     }
 
     public void setState(State state) {
-        view.setState(state);
-        menu.setState(view.getState());
-        result3dView.setState(view.getState());
+        splineView.setState(state);
+        splineMenu.setState(splineView.getState());
+        result3dView.setState(splineView.getState());
     }
 
     public void onClose() {
-        menu.onClose();
+        splineMenu.onClose();
     }
 }
