@@ -38,10 +38,6 @@ public class Window extends WindowBase {
 			System.exit(1);
 		}
 		State state = State.createDefault();
-		State stateFromFile = loadState(new File("default_state.bin"));
-		if (stateFromFile != null) {
-			state = stateFromFile;
-		}
 		mainView = new MainView(this, result3dView, state);
 		result3dView = new Result3dView(state);
 		result3dView.setState(mainView.getState());
