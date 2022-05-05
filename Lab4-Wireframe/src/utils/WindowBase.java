@@ -2,7 +2,6 @@ package utils;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
 
@@ -20,23 +19,36 @@ public class WindowBase extends JFrame {
 	private final JMenuBar menuBar;
 	protected JToolBar toolBar;
 
-	public WindowBase() {
+	public WindowBase(int x, int y, String title) {
+		setSize(x, y);
+		setTitle(title);
+		setLocationByPlatform(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		toolBar = new JToolBar("Main toolbar");
+		toolBar = new JToolBar("Toolbar");
 		toolBar.setRollover(true);
 		add(toolBar, BorderLayout.PAGE_START);
 	}
 
-	public WindowBase(int x, int y, String title) {
-		this();
-		setSize(x, y);
-		setLocationByPlatform(true);
-		setTitle(title);
+	public void addMenu(String title) {
+		MenuElement element = getParentMenuElement(title);
+		if (element == null) {
+			throw new InvalidParameterException("menu path not found: " + title);
+		}
+		JMenu menu = new JMenu(title);
+		if (element instanceof JMenuBar) {
+			((JMenuBar) element).add(menu);
+		} else if (element instanceof JMenu) {
+			((JMenu) element).add(menu);
+		} else if (element instanceof JPopupMenu) {
+			((JPopupMenu) element).add(menu);
+		} else {
+			throw new InvalidParameterException("invalid menu path: " + title);
+		}
 	}
 
-	public JMenuItem createMenuItem(String title, String icon, String actionMethod) throws NoSuchMethodException {
+	private JMenuItem createMenuItem(String title, String icon, String actionMethod) throws NoSuchMethodException {
 		JMenuItem item = new JMenuItem(title);
 		if (icon != null) {
 			item.setIcon(new ImageIcon(getClass().getResource("assets/" + icon), title));
@@ -50,27 +62,6 @@ public class WindowBase extends JFrame {
 			}
 		});
 		return item;
-	}
-
-	public JMenu createSubMenu(String title) {
-		return new JMenu(title);
-	}
-
-	public void addSubMenu(String title) {
-		MenuElement element = getParentMenuElement(title);
-		if (element == null) {
-			throw new InvalidParameterException("menu path not found: " + title);
-		}
-		JMenu subMenu = createSubMenu(getMenuPathName(title));
-		if (element instanceof JMenuBar) {
-			((JMenuBar) element).add(subMenu);
-		} else if (element instanceof JMenu) {
-			((JMenu) element).add(subMenu);
-		} else if (element instanceof JPopupMenu) {
-			((JPopupMenu) element).add(subMenu);
-		} else {
-			throw new InvalidParameterException("invalid menu path: " + title);
-		}
 	}
 
 	public void addMenuItem(String title, String icon, String actionMethod) throws NoSuchMethodException {
@@ -126,7 +117,11 @@ public class WindowBase extends JFrame {
 		return element;
 	}
 
-	public JButton createToolBarButton(JMenuItem item) {
+	public JButton createToolBarButton(String menuPath) {
+		JMenuItem item = (JMenuItem)getMenuElement(menuPath);
+		if (item == null) {
+			throw new InvalidParameterException("menu path not found: " + menuPath);
+		}
 		JButton button = new JButton(item.getIcon());
 		for (ActionListener listener: item.getActionListeners()) {
 			button.addActionListener(listener);
@@ -135,27 +130,11 @@ public class WindowBase extends JFrame {
 		return button;
 	}
 
-	public JButton createToolBarButton(String menuPath) {
-		JMenuItem item = (JMenuItem)getMenuElement(menuPath);
-		if (item == null) {
-			throw new InvalidParameterException("menu path not found: " + menuPath);
-		}
-		return createToolBarButton(item);
-	}
-
 	public void addToolBarButton(String menuPath) {
 		toolBar.add(createToolBarButton(menuPath));
 	}
 
 	public void addToolBarSeparator() {
 		toolBar.addSeparator();
-	}
-
-	public File getSaveFileName(String extension, String description) {
-		return FileUtils.getSaveFileName(this, extension, description);
-	}
-
-	public File getOpenFileName(String extension, String description) {
-		return FileUtils.getOpenFileName(this, extension, description);
 	}
 }

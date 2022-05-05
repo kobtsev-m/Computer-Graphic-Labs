@@ -8,13 +8,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class State implements Serializable {
-    private int n, m, circleN, circleM;
+    private int n1, m1, n2, m2;
     private double zb, zf, sw, sh;
     private List<Vector4> points = new LinkedList<>();
     private List<Vector4> splinePoints = new LinkedList<>();
 
-    public State() {
-    }
+    public State() {}
 
     public State(State state) {
         this.copy(state);
@@ -22,31 +21,31 @@ public class State implements Serializable {
 
     public static State createDefault() {
         State state = new State();
-        state.m = 10;
-        state.n = 10;
-        state.circleN = 10;
-        state.circleM = 10;
+        state.n1 = 10;
+        state.m1 = 10;
+        state.n2 = 10;
+        state.m2 = 10;
         state.sw = 8;
         state.sh = 8;
         state.zf = 100;
         state.zb = 100;
         state.points = new ArrayList<>();
-        state.points.add(new Vector4(-1, -1, 16));
-        state.points.add(new Vector4(-1, 1, 16));
-        state.points.add(new Vector4(1, -1, 16));
-        state.points.add(new Vector4(1, 1, 16));
+        state.points.add(new Vector4(-1, -1, 20));
+        state.points.add(new Vector4(-1, 1, 20));
+        state.points.add(new Vector4(1, -1, 20));
+        state.points.add(new Vector4(1, 1, 20));
         return state;
     }
 
     public void copy(State state) {
-        n = state.n;
-        m = state.m;
+        n1 = state.n1;
+        m1 = state.m1;
+        n2 = state.n2;
+        m2 = state.m2;
         zf = state.zf;
         zb = state.zb;
         sh = state.sh;
         sw = state.sw;
-        circleN = state.circleN;
-        circleM = state.circleM;
         for (Vector4 vector4 : state.points) {
             points.add(new Vector4(vector4));
         }
@@ -71,37 +70,37 @@ public class State implements Serializable {
         this.points = points;
     }
 
-    public int getCircleN() {
-        return circleN;
+    public int getN1() {
+        return n1;
     }
 
-    public void setCircleN(int circleN) {
-        this.circleN = circleN;
+    public void setN1(int n1) {
+        this.n1 = n1;
     }
 
-    public int getCircleM() {
-        return circleM;
+    public int getM1() {
+        return m1;
     }
 
-    public void setCircleM(int circleM) {
-        this.circleM = circleM;
+    public void setM1(int m1) {
+        this.m1 = m1;
+    }
+    public int getN2() {
+        return n2;
     }
 
-    public int getN() {
-        return n;
+    public void setN2(int n2) {
+        this.n2 = n2;
     }
 
-    public void setN(int n) {
-        this.n = n;
+    public int getM2() {
+        return m2;
     }
 
-    public int getM() {
-        return m;
+    public void setM2(int m2) {
+        this.m2 = m2;
     }
 
-    public void setM(int m) {
-        this.m = m;
-    }
 
     public double getSw() {
         return sw;

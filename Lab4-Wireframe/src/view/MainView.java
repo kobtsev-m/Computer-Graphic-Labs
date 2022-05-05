@@ -9,11 +9,11 @@ public class MainView extends JPanel {
     Window window;
     SplineView splineView;
     SplineMenu splineMenu;
-    Result3dView result3dView;
+    ResultView resultView;
 
-    public MainView(Window window, Result3dView result3dView, State state) {
+    public MainView(Window window, ResultView resultView, State state) {
         this.window = window;
-        this.result3dView = result3dView;
+        this.resultView = resultView;
 
         setLayout(new GridBagLayout());
         GridBagConstraints constraints1 = new GridBagConstraints();
@@ -31,7 +31,7 @@ public class MainView extends JPanel {
         constraints2.gridy = 1;
 
         splineView = new SplineView(state);
-        splineMenu = new SplineMenu(result3dView, splineView, state);
+        splineMenu = new SplineMenu(resultView, splineView, state);
         splineView.setMenu(splineMenu);
 
         add(splineView, constraints1);
@@ -46,7 +46,7 @@ public class MainView extends JPanel {
     public void setState(State state) {
         splineView.setState(state);
         splineMenu.setState(splineView.getState());
-        result3dView.setState(splineView.getState());
+        resultView.setState(splineView.getState());
     }
 
     public void onClose() {

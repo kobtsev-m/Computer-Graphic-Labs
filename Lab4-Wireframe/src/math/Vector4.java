@@ -54,7 +54,7 @@ public class Vector4 extends Matrix implements Serializable {
     public void normalizeByLastPoint() {
         double last = getMatrix()[getMatrix().length - 1][0];
         for (int i = 0; i < getMatrix().length; i++) {
-            getMatrix()[i][0] = getMatrix()[i][0] / last;
+            getMatrix()[i][0] /= last;
         }
         getMatrix()[getMatrix().length - 1][0] = 1;
     }

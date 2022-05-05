@@ -21,9 +21,9 @@ public class Matrix implements Serializable {
         }
     }
 
-    public Vector4 mul(Vector4 operand) {
+    public Vector4 mul(Vector4 vector) {
         double[][] a = matrix;
-        double[][] b = operand.getMatrix();
+        double[][] b = vector.getMatrix();
         double[][] c = mul(a, b);
         return new Vector4(c);
     }
@@ -101,20 +101,13 @@ public class Matrix implements Serializable {
         });
     }
 
-    public static Matrix getMproj(double Sw, double Sh, double zf, double zb) { //55
+    public static Matrix getMproj(double Sw, double Sh, double zf, double zb) {
         return new Matrix(4, 4, new double[]{
             2.0 * zf * Sw, 0, 0, 0,
             0, 2.0 * zf * Sh, 0, 0,
             0, 0, zb / (zb - zf), (-zf * zb) / (zb - zf),
             0, 0, 1, 0
         });
-    }
-
-    public double getValue() {
-        if (matrix.length != 1 || matrix[0].length != 1) {
-            throw new UnsupportedOperationException("not 1x1 matrix");
-        }
-        return matrix[0][0];
     }
 
     @Override

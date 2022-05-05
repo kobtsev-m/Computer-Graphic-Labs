@@ -1,7 +1,7 @@
 package view;
 
 import state.State;
-import utils.Transformator;
+import utils.CoordsTransformer;
 import math.Matrix;
 import math.Vector4;
 
@@ -13,28 +13,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SplineView extends JPanel {
-    Transformator transformator;
+    private final int WIDTH = 1100;
+    private final int HEIGHT = 550;
+    private final int POINT_SIZE = 20;
+    private SplineMenu menu;
+    private CoordsTransformer coordsTransformer;
     State state;
     private List<Vector4> subPoints = new LinkedList<>();
-    private SplineMenu menu;
-    private final int pointSize = 16;
     private int selectedPoint;
     private int movingPoint;
 
     public SplineView(State state) {
         this.state = state;
-        setPreferredSize(new Dimension(1200, 600));
-        transformator = new Transformator(getWidth() / 2, getHeight() / 2, 16);
-        generateSubpoint();
-        addComponentListener(new ComponentAdapter() {
+        this.coordsTransformer = new CoordsTransformer(getWidth() / 2, getHeight() / 2, 10);
+
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        SplineView self = this;
+
+        ComponentListener cl = new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 super.componentResized(e);
-                transformator = new Transformator(getWidth() / 2, getHeight() / 2, transformator.getScale());
+                coordsTransformer = new CoordsTransformer(getWidth() / 2, getHeight() / 2, coordsTransformer.getScale());
                 repaint();
             }
-        });
-        SplineView v = this;
+        };
         MouseMotionListener mml = new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -42,10 +45,10 @@ public class SplineView extends JPanel {
                     if (e.getX() < 0 || e.getX() > getWidth() - 1 || e.getY() < 0 || e.getY() > getHeight() - 1) {
                         return;
                     }
-                    v.state.getPoints().get(movingPoint).setX(transformator.xAToB(e.getX()));
-                    v.state.getPoints().get(movingPoint).setY(transformator.yAToB(e.getY()));
+                    self.state.getPoints().get(movingPoint).setX(coordsTransformer.xAToB(e.getX()));
+                    self.state.getPoints().get(movingPoint).setY(coordsTransformer.yAToB(e.getY()));
                     sendSelectedPointInfo();
-                    generateSubpoint();
+                    generateSubPoints();
                     repaint();
                 }
             }
@@ -55,60 +58,59 @@ public class SplineView extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
-                for (int i = 0; i < v.subPoints.size(); i++) {
-                    Vector4 point = v.subPoints.get(i);
-                    int px = transformator.xBToA(point.getX());
-                    int py = transformator.yBToA(point.getY());
-                    int size = pointSize / 2;
+                for (int i = 0; i < self.subPoints.size(); i++) {
+                    Vector4 point = self.subPoints.get(i);
+                    int px = coordsTransformer.xBToA(point.getX());
+                    int py = coordsTransformer.yBToA(point.getY());
+                    int size = POINT_SIZE / 2;
                     if ((px > x - size && px < x + size) && (py > y - size && py < y + size)) {
                         createPoint(x, y, i + 1);
                         return;
                     }
                 }
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    if (v.state.getPoints().size() <= 4) {
+                    if (self.state.getPoints().size() <= 4) {
                         return;
                     }
-                    for (int i = 0; i < v.state.getPoints().size(); i++) {
-                        Vector4 point = v.state.getPoints().get(i);
-                        int px = transformator.xBToA(point.getX());
-                        int py = transformator.yBToA(point.getY());
+                    for (int i = 0; i < self.state.getPoints().size(); i++) {
+                        Vector4 point = self.state.getPoints().get(i);
+                        int px = coordsTransformer.xBToA(point.getX());
+                        int py = coordsTransformer.yBToA(point.getY());
                         int size = 8;
                         if ((px > x - size && px < x + size) && (py > y - size && py < y + size)) {
-                            v.state.getPoints().remove(point);
+                            self.state.getPoints().remove(point);
                             resetPoint();
-                            // Переотправить всё о новой точке
-                            generateSubpoint();
+                            generateSubPoints();
                             sendSelectedPointInfo();
                             repaint();
                             break;
                         }
                     }
-                    menu.setCountPoints(state.getPoints().size());
                 }
             }
-
             @Override
             public void mousePressed(MouseEvent e) {
                 findPoint(e.getX(), e.getY());
             }
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 resetPoint();
                 repaint();
             }
         };
-        addMouseListener(ml);
-        addMouseMotionListener(mml);
-        addMouseWheelListener(e -> {
-            if (e.getUnitsToScroll() > 0) {
-                transformator.setScale(transformator.getScale() / 2);
-            } else if (e.getUnitsToScroll() < 0) {
-                transformator.setScale(transformator.getScale() * 2);
+        MouseWheelListener mwl = (event) -> {
+            if (event.getUnitsToScroll() > 0) {
+                coordsTransformer.setScale(coordsTransformer.getScale() / 2);
+            } else if (event.getUnitsToScroll() < 0) {
+                coordsTransformer.setScale(coordsTransformer.getScale() * 2);
             }
             repaint();
-        });
+        };
+
+        addComponentListener(cl);
+        addMouseListener(ml);
+        addMouseMotionListener(mml);
+        addMouseWheelListener(mwl);
     }
 
     public void setMenu(SplineMenu menu) {
@@ -116,9 +118,8 @@ public class SplineView extends JPanel {
     }
 
     private void createPoint(int x, int y, int num) {
-        state.getPoints().add(num, new Vector4(transformator.xAToB(x), transformator.yAToB(y), pointSize));
-        generateSubpoint();
-        menu.setCountPoints(state.getPoints().size());
+        state.getPoints().add(num, new Vector4(coordsTransformer.xAToB(x), coordsTransformer.yAToB(y), POINT_SIZE));
+        generateSubPoints();
     }
 
     private void resetPoint() {
@@ -126,12 +127,10 @@ public class SplineView extends JPanel {
     }
 
     private void findPoint(int x, int y) {
-        int px;
-        int py;
         for (int i = 0; i < state.getPoints().size(); i++) {
             Vector4 point = state.getPoints().get(i);
-            px = transformator.xBToA(point.getX());
-            py = transformator.yBToA(point.getY());
+            int px = coordsTransformer.xBToA(point.getX());
+            int py = coordsTransformer.yBToA(point.getY());
             int size = point.getPointSize();
             if ((px > x - size && px < x + size / 2) && (py > y - size / 2 && py < y + size / 2)) {
                 selectedPoint = i;
@@ -147,71 +146,59 @@ public class SplineView extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        generateSubpoint();
+        generateSubPoints();
         BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-        Graphics gi = image.getGraphics();
-        ((Graphics2D) gi).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        ((Graphics2D) gi).setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        ((Graphics2D) gi).setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        gi.setColor(Color.WHITE);
-        gi.fillRect(0, 0, image.getWidth(), image.getHeight());
-        gi.setColor(Color.BLACK);
-        gi.drawLine(0, transformator.yBToA(0), getWidth(), transformator.yBToA(0));
-        gi.drawLine(transformator.xBToA(0), 0, transformator.xBToA(0), getHeight());
-        gi.setColor(Color.BLACK);
-        int riskSize = 5;
-        gi.drawLine(
-            transformator.xBToA(1),
-            getHeight() / 2 - riskSize,
-            transformator.xBToA(1),
-            getHeight() / 2 + riskSize
-        );
-        gi.drawLine(
-            getWidth() / 2 - riskSize,
-            transformator.yBToA(1),
-            getWidth() / 2 + riskSize,
-            transformator.yBToA(1)
-        );
-        calcPointsToDraw();
-        gi.setColor(Color.BLACK);
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
+
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.drawLine(0, coordsTransformer.yBToA(0), getWidth(), coordsTransformer.yBToA(0));
+        g2d.drawLine(coordsTransformer.xBToA(0), 0, coordsTransformer.xBToA(0), getHeight());
+        calculatePointsToDraw();
+
+        g2d.setColor(Color.CYAN);
         for (int i = 0; i < state.getSplinePoints().size() - 1; i++) {
             Vector4 point1 = state.getSplinePoints().get(i);
             Vector4 point2 = state.getSplinePoints().get(i + 1);
-            gi.drawLine(
-                transformator.xBToA(point1.getX()),
-                transformator.yBToA(point1.getY()),
-                transformator.xBToA(point2.getX()),
-                transformator.yBToA(point2.getY())
+            g2d.drawLine(
+                coordsTransformer.xBToA(point1.getX()),
+                coordsTransformer.yBToA(point1.getY()),
+                coordsTransformer.xBToA(point2.getX()),
+                coordsTransformer.yBToA(point2.getY())
             );
         }
-        gi.setColor(Color.LIGHT_GRAY);
+
+        g2d.setColor(Color.LIGHT_GRAY);
         for (int i = 0; i < state.getPoints().size() - 1; i++) {
             Vector4 point1 = state.getPoints().get(i);
             Vector4 point2 = state.getPoints().get(i + 1);
-            gi.drawLine(transformator.xBToA(
-                point1.getX()),
-                transformator.yBToA(point1.getY()),
-                transformator.xBToA(point2.getX()),
-                transformator.yBToA(point2.getY())
+            g2d.drawLine(
+                coordsTransformer.xBToA(point1.getX()),
+                coordsTransformer.yBToA(point1.getY()),
+                coordsTransformer.xBToA(point2.getX()),
+                coordsTransformer.yBToA(point2.getY())
             );
         }
-        gi.setColor(Color.BLUE);
         for (int i = 0; i < state.getPoints().size(); i++) {
             Vector4 point = state.getPoints().get(i);
             drawPoint(
                 image,
-                transformator.xBToA(point.getX()),
-                transformator.yBToA(point.getY()),
+                coordsTransformer.xBToA(point.getX()),
+                coordsTransformer.yBToA(point.getY()),
                 point.getPointSize(),
                 Color.RED
             );
         }
-
         for (Vector4 point : subPoints) {
             drawPoint(
                 image,
-                transformator.xBToA(point.getX()),
-                transformator.yBToA(point.getY()),
+                coordsTransformer.xBToA(point.getX()),
+                coordsTransformer.yBToA(point.getY()),
                 point.getPointSize(),
                 Color.RED
             );
@@ -220,13 +207,13 @@ public class SplineView extends JPanel {
             Vector4 point = state.getPoints().get(this.selectedPoint);
             drawPoint(
                 image,
-                transformator.xBToA(point.getX()),
-                transformator.yBToA(point.getY()),
+                coordsTransformer.xBToA(point.getX()),
+                coordsTransformer.yBToA(point.getY()),
                 point.getPointSize(),
-                Color.BLUE
+                Color.WHITE
             );
         }
-        gi.setColor(Color.GREEN);
+
         g.drawImage(image, 0, 0, null);
     }
 
@@ -240,12 +227,12 @@ public class SplineView extends JPanel {
         g2d.drawOval(x - size / 2, y - size / 2, size, size);
     }
 
-    private void generateSubpoint() {
+    private void generateSubPoints() {
         subPoints = new LinkedList<>();
         for (int i = 0; i < state.getPoints().size() - 1; i++) {
             Vector4 point1 = state.getPoints().get(i);
             Vector4 point2 = state.getPoints().get(i + 1);
-            int subPointSize = pointSize / 2;
+            int subPointSize = POINT_SIZE / 2;
             Vector4 subPoint = new Vector4(
                 (point2.getX() - point1.getX()) / 2 + point1.getX(),
                 (point2.getY() - point1.getY()) / 2 + point1.getY(),
@@ -255,35 +242,35 @@ public class SplineView extends JPanel {
         }
     }
 
-    public void calcPointsToDraw() {
-        Matrix m = new Matrix(new double[][]{
+    public void calculatePointsToDraw() {
+        Matrix M = new Matrix(new double[][] {
             {-1, 3, -3, 1},
             {3, -6, 3, 0},
             {-3, 0, 3, 0},
             {1, 4, 1, 0}
         });
+        M = M.mul(1.0 / 6.0);
         state.setSplinePoints(new LinkedList<>());
         int K = state.getPoints().size();
         for (int i = 3; i < K; ++i) {
-            Matrix gx = new Matrix(4, 1, new double[]{
-                    state.getPoints().get(i - 3).getX(),
-                    state.getPoints().get(i - 2).getX(),
-                    state.getPoints().get(i - 1).getX(),
-                    state.getPoints().get(i).getX()
+            Matrix Gx = new Matrix(4, 1, new double[] {
+                state.getPoints().get(i - 3).getX(),
+                state.getPoints().get(i - 2).getX(),
+                state.getPoints().get(i - 1).getX(),
+                state.getPoints().get(i).getX()
             });
-            Matrix gy = new Matrix(4, 1, new double[]{
-                    state.getPoints().get(i - 3).getY(),
-                    state.getPoints().get(i - 2).getY(),
-                    state.getPoints().get(i - 1).getY(),
-                    state.getPoints().get(i).getY()
+            Matrix Gy = new Matrix(4, 1, new double[] {
+                state.getPoints().get(i - 3).getY(),
+                state.getPoints().get(i - 2).getY(),
+                state.getPoints().get(i - 1).getY(),
+                state.getPoints().get(i).getY()
             });
-            double dt = 1.0 / state.getN();
-            for (int j = 0; j < state.getN() + 1; ++j) {
-                double t = j * dt;
-                Matrix T = new Matrix(1, 4, new double[]{Math.pow(t, 3), Math.pow(t, 2), Math.pow(t, 1), 1.0});
-                Matrix tm = T.mul(m);
-                double x = tm.mul(gx).mul(1.0 / 6.0).getValue();
-                double y = tm.mul(gy).mul(1.0 / 6.0).getValue();
+            for (int j = 0; j < state.getN1() + 1; ++j) {
+                double t = (double) j / state.getN1();
+                Matrix T = new Matrix(1, 4, new double[] { Math.pow(t, 3), Math.pow(t, 2), Math.pow(t, 1), 1.0 });
+                Matrix TM = T.mul(M);
+                double x = TM.mul(Gx).getMatrix()[0][0];
+                double y = TM.mul(Gy).getMatrix()[0][0];
                 state.getSplinePoints().add(new Vector4(x, y, 0));
             }
         }
@@ -323,16 +310,13 @@ public class SplineView extends JPanel {
         menu.setY(state.getPoints().get(selectedPoint).getY());
     }
 
-    public void calcBestScale() {
-        double maxX;
-        double maxY;
+    public void calculateBestScale() {
         Vector4 v1 = state.getPoints().iterator().next();
-        if (v1 != null) {
-            maxX = Math.abs(v1.getX());
-            maxY = Math.abs(v1.getY());
-        } else {
+        if (v1 == null) {
             return;
         }
+        double maxX = Math.abs(v1.getX());
+        double maxY = Math.abs(v1.getY());
         for (Vector4 v : state.getPoints()) {
             double absX = Math.abs(v.getX());
             double absY = Math.abs(v.getY());
@@ -343,18 +327,18 @@ public class SplineView extends JPanel {
                 maxY = absY;
             }
         }
-        double dx = maxX * 1.3;
-        double dy = maxY * 1.3;
-        int h = getHeight();
+        double dx = maxX * 1.25;
+        double dy = maxY * 1.25;
         int w = getWidth();
+        int h = getHeight();
         if (w == 0 || h == 0) {
-            h = 600;
-            w = 800;
+            w = WIDTH;
+            h = HEIGHT;
         }
         double scaleX = (double) w / 2 / dx;
         double scaleY = (double) h / 2 / dy;
         double newScale = (Math.min(scaleX, scaleY));
-        transformator.setScale(newScale);
+        coordsTransformer.setScale(newScale);
         repaint();
     }
 
@@ -364,8 +348,8 @@ public class SplineView extends JPanel {
 
     public void setState(State newState) {
         state = newState;
-        calcBestScale();
-        calcPointsToDraw();
+        calculateBestScale();
+        calculatePointsToDraw();
     }
 
     public double getSelectedY() {
@@ -391,10 +375,9 @@ public class SplineView extends JPanel {
             setSelectedPoint(state.getPoints().size() - 1);
         }
         resetPoint();
-        generateSubpoint();
+        generateSubPoints();
         sendSelectedPointInfo();
         repaint();
-        menu.setCountPoints(state.getPoints().size());
     }
 
     public void addPointAfterSelected() {
@@ -403,18 +386,17 @@ public class SplineView extends JPanel {
         if (selectedPoint >= subPoints.size()) {
             Vector4 subP = subPoints.get(selectedPoint - 1);
             Vector4 p = state.getPoints().get(selectedPoint);
-            x = transformator.xBToA(2 * p.getX() - subP.getX());
-            y = transformator.yBToA(2 * p.getY() - subP.getY());
+            x = coordsTransformer.xBToA(2 * p.getX() - subP.getX());
+            y = coordsTransformer.yBToA(2 * p.getY() - subP.getY());
         } else {
             Vector4 subP = subPoints.get(selectedPoint);
-            x = transformator.xBToA(subP.getX());
-            y = transformator.yBToA(subP.getY());
+            x = coordsTransformer.xBToA(subP.getX());
+            y = coordsTransformer.yBToA(subP.getY());
         }
         createPoint(x, y, selectedPoint + 1);
         resetPoint();
-        generateSubpoint();
+        generateSubPoints();
         repaint();
-        menu.setCountPoints(state.getPoints().size());
     }
 
     public int getSelectedNumber() {

@@ -1,6 +1,7 @@
 import state.State;
+import utils.FileUtils;
 import view.MainView;
-import view.Result3dView;
+import view.ResultView;
 import utils.WindowBase;
 
 import javax.swing.*;
@@ -11,18 +12,18 @@ import java.io.*;
 
 public class Window extends WindowBase {
 	MainView mainView;
-	Result3dView result3dView;
+	ResultView resultView;
 
 	public Window() {
 		super(600, 400, "Wireframe");
 		try {
-			addSubMenu("File");
+			addMenu("File");
 			addMenuItem("File/Save", "save.png", "onSave");
 			addMenuItem("File/Load", "open.png", "onLoad");
-			addSubMenu("Scene");
+			addMenu("Scene");
 			addMenuItem("Scene/Spline", "spline.png", "onParameters");
 			addMenuItem("Scene/Reset", "reset.png", "onReset");
-			addSubMenu("About");
+			addMenu("About");
 			addMenuItem("About/About", "about.png", "onAbout");
 			addToolBarButton("File/Save");
 			addToolBarButton("File/Load");
@@ -36,10 +37,10 @@ public class Window extends WindowBase {
 			System.exit(1);
 		}
 		State state = State.createDefault();
-		mainView = new MainView(this, result3dView, state);
-		result3dView = new Result3dView(state);
-		result3dView.setState(mainView.getState());
-		add(result3dView);
+		mainView = new MainView(this, resultView, state);
+		resultView = new ResultView(state);
+		resultView.setState(mainView.getState());
+		add(resultView);
 		onParameters();
 		pack();
 	}
@@ -86,16 +87,16 @@ public class Window extends WindowBase {
 	}
 
 	public void onLoad() {
-		File file = getOpenFileName("bin", "state");
+		File file = FileUtils.getSaveFileName(this, "bin", "state");
 		if (file == null) {
 			return;
 		}
 		mainView.setState(loadState(file));
-		result3dView.setState(mainView.getState());
+		resultView.setState(mainView.getState());
 	}
 
 	public void onParameters() {
-		JDialog dialog = new JDialog(this, "Set parameters", true);
+		JDialog dialog = new JDialog(this, "Set Parameters", true);
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -104,7 +105,7 @@ public class Window extends WindowBase {
 			}
 		});
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		mainView = new MainView(this, result3dView, mainView.getState());
+		mainView = new MainView(this, resultView, mainView.getState());
 		dialog.add(mainView);
 		dialog.setResizable(false);
 		dialog.pack();
@@ -127,7 +128,7 @@ public class Window extends WindowBase {
 	}
 
 	public void onSave() {
-		File file = getSaveFileName("bin", "state");
+		File file = FileUtils.getSaveFileName(this, "bin", "state");
 		if (file == null) {
 			return;
 		}
@@ -140,6 +141,6 @@ public class Window extends WindowBase {
 	}
 
 	public void onReset() {
-		result3dView.resetAngles();
+		resultView.resetAngles();
 	}
 }

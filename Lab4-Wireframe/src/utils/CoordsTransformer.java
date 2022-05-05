@@ -1,14 +1,14 @@
 package utils;
 
-public class Transformator {
+public class CoordsTransformer {
     private final int x0;
     private final int y0;
     private double scale;
 
-    public Transformator(int x, int y, double scale) {
+    public CoordsTransformer(int x0, int y0, double scale) {
+        this.x0 = x0;
+        this.y0 = y0;
         this.scale = scale;
-        this.x0 = x;
-        this.y0 = y;
     }
     public double xAToB(int x) {
         return (x - x0) / scale;
@@ -17,16 +17,15 @@ public class Transformator {
         return  (y - y0) / scale;
     }
     public int xBToA(double x) {
-        return (int) Math.round(x*scale + x0);
+        return (int) Math.round(x0 + x*scale);
     }
     public int yBToA(double y) {
-        return (int) Math.round(y*scale + y0);
+        return (int) Math.round(y0 + y*scale);
     }
     public void setScale(double scale) {
-        if(scale<=0) {
-            return;
+        if (scale > 0) {
+            this.scale = scale;
         }
-        this.scale=scale;
     }
     public double getScale(){
         return scale;
